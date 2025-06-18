@@ -1,1 +1,11 @@
-# goit-pythonweb-hw-12
+### Docker Compose:
+
+```bash
+docker compose up
+```
+
+### FastAPI:
+
+```bash
+fastapi dev
+```
