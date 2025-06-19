@@ -1,5 +1,7 @@
 from pydantic import BaseModel, EmailStr
 
+from src.database.models import Role
+
 
 class UserModel(BaseModel):
     username: str
@@ -12,6 +14,7 @@ class UserResponse(BaseModel):
     username: str
     email: str
     avatar: str
+    roles: Role
 
     class Config:
         from_attributes = True

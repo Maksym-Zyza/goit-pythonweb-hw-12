@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status, Path, File
 from sqlalchemy.orm import Session
 
-from src.database.models import User
+from src.database.models import Role, User
 from src.database.db import get_db
 from src.schemas.users import UserResponse
 from src.repository import users as repository_users
@@ -39,10 +39,19 @@ async def update_avatar_user(
     user: User = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ):
+
+    if user.roles.value != Role.admin.value:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admin users can change the default avatar.",
+        )
+
     avatar_url = UploadFileService().upload_file(file, user.username)
     user = await repository_users.update_avatar_url(user.email, avatar_url, db)
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
+
     return user

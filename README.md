@@ -9,3 +9,13 @@ docker compose up
 ```bash
 fastapi dev
 ```
+
+### Redis:
+
+```bash
+redis-cli
+```
+
+```bash
+monitor
+```

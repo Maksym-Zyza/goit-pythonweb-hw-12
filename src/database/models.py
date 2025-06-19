@@ -1,3 +1,4 @@
+import enum
 from sqlalchemy import (
     Column,
     Integer,
@@ -6,11 +7,17 @@ from sqlalchemy import (
     Boolean,
     ForeignKey,
     UniqueConstraint,
+    Enum,
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
+
+
+class Role(enum.Enum):
+    admin: str = "admin"
+    user: str = "user"
 
 
 class User(Base):
@@ -23,6 +30,7 @@ class User(Base):
     refresh_token = Column(String(255), nullable=True)
     confirmed = Column(Boolean, default=False)
     avatar = Column(String(255), nullable=True)
+    roles = Column("roles", Enum(Role), default=Role.user)
 
     contacts = relationship("Contact", back_populates="owner", cascade="all, delete")
 
