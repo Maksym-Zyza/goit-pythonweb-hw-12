@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 from src.database.models import Role
 
@@ -27,3 +27,7 @@ class TokenModel(BaseModel):
 
 class RequestEmail(BaseModel):
     email: EmailStr
+
+
+class ResetPasswordModel(BaseModel):
+    password: str = Field(min_length=6)

@@ -1,9 +1,26 @@
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Request
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    status,
+    BackgroundTasks,
+    Request,
+    Form,
+)
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 
 from src.database.db import get_db
-from src.schemas.users import UserResponse, UserModel, TokenModel, RequestEmail
+from src.schemas.users import (
+    UserResponse,
+    UserModel,
+    TokenModel,
+    RequestEmail,
+    ResetPasswordModel,
+)
 from src.services.auth import auth_service
 from src.repository.users import (
     get_user_by_email,
@@ -11,9 +28,11 @@ from src.repository.users import (
     get_user_by_email,
     change_confirmed_email,
 )
-from src.services.email import send_email
+from src.services.email import send_email, send_reset_password_email
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+templates = Jinja2Templates(directory="src/templates")
 
 
 @router.post(
@@ -90,3 +109,54 @@ async def request_email(
             send_email, user.email, user.username, str(request.base_url)
         )
     return {"message": "Check your email for confirmation."}
+
+
+@router.post("/forgot-password")
+async def forgot_password(
+    body: RequestEmail,
+    background_tasks: BackgroundTasks,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    user = await get_user_by_email(body.email, db)
+    if user:
+        token = auth_service.create_email_token({"sub": user.email})
+        reset_link = f"{request.base_url}api/auth/reset-password/{token}"
+
+        background_tasks.add_task(
+            send_reset_password_email,
+            user.email,
+            user.username,
+            reset_link,
+        )
+    return {"message": "If the email exists, a password reset link will be sent."}
+
+
+@router.get("/reset-password/{token}", response_class=HTMLResponse)
+async def reset_password_form(token: str, request: Request):
+    return templates.TemplateResponse(
+        "reset_password_form.html", {"request": request, "token": token}
+    )
+
+
+@router.post("/reset-password/{token}")
+async def reset_password(
+    token: str,
+    password: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    try:
+        email = auth_service.get_email_from_token(token)
+    except HTTPException:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired token"
+        )
+
+    user = await get_user_by_email(email, db)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    hashed_password = auth_service.get_password_hash(password)
+    user.password = hashed_password
+    db.commit()
+    return {"message": "Password reset successful"}
