@@ -1,3 +1,17 @@
+"""
+Контролери для роботи з контактами користувача.
+
+Маршрути реалізують функціонал:
+- створення контакту
+- отримання списку контактів з фільтрами
+- перегляд одного контакту
+- редагування
+- видалення
+- пошук днів народження протягом 7 днів
+
+Доступ тільки для авторизованих користувачів.
+"""
+
 from fastapi import APIRouter, Depends, Query, status
 from src.database.db import get_db
 from src.repository import contacts as repository
@@ -21,6 +35,19 @@ async def get_contacts(
     db=Depends(get_db),
     current_user: User = Depends(auth_service.get_current_user),
 ):
+    """
+    Отримати список контактів користувача з опціональним фільтром по імені, прізвищу та email.
+
+    Args:
+        first_name (Optional[str]): Фільтр за іменем.
+        last_name (Optional[str]): Фільтр за прізвищем.
+        email (Optional[str]): Фільтр за email.
+        db (Session): Сесія бази даних.
+        current_user (User): Поточний авторизований користувач.
+
+    Returns:
+        List[ContactResponse]: Список контактів користувача.
+    """
     contacts = await repository.search_contacts(
         first_name, last_name, email, db, current_user
     )
@@ -35,6 +62,17 @@ async def create_contact(
     db=Depends(get_db),
     current_user: User = Depends(auth_service.get_current_user),
 ):
+    """
+    Створити новий контакт для користувача.
+
+    Args:
+        body (ContactModelRegister): Дані нового контакту.
+        db (Session): Сесія бази даних.
+        current_user (User): Поточний авторизований користувач.
+
+    Returns:
+        ContactResponse: Створений контакт.
+    """
     contact = await repository.create_contact(body, db, current_user)
     return contact
 
@@ -43,6 +81,16 @@ async def create_contact(
 async def get_upcoming_birthdays(
     db=Depends(get_db), current_user: User = Depends(auth_service.get_current_user)
 ):
+    """
+    Отримати список контактів, у яких день народження протягом наступних 7 днів.
+
+    Args:
+        db (Session): Сесія бази даних.
+        current_user (User): Поточний авторизований користувач.
+
+    Returns:
+        List[ContactResponse]: Список контактів з майбутніми днями народження.
+    """
     contacts = await repository.get_upcoming_birthdays(db, current_user)
     return contacts
 
@@ -53,6 +101,17 @@ async def get_contact_by_id(
     db=Depends(get_db),
     current_user: User = Depends(auth_service.get_current_user),
 ):
+    """
+    Отримати контакт за його унікальним ідентифікатором.
+
+    Args:
+        id (int): Ідентифікатор контакту.
+        db (Session): Сесія бази даних.
+        current_user (User): Поточний авторизований користувач.
+
+    Returns:
+        ContactResponse: Знайдений контакт.
+    """
     contact = await repository.get_contact_by_id(id, db, current_user)
     return contact
 
@@ -64,6 +123,18 @@ async def update_contact(
     db=Depends(get_db),
     current_user: User = Depends(auth_service.get_current_user),
 ):
+    """
+    Оновити існуючий контакт користувача.
+
+    Args:
+        id (int): Ідентифікатор контакту.
+        body (ContactModelRegister): Оновлені дані контакту.
+        db (Session): Сесія бази даних.
+        current_user (User): Поточний авторизований користувач.
+
+    Returns:
+        ContactResponse: Оновлений контакт.
+    """
     contact = await repository.update_contact(id, body, db, current_user)
     return contact
 
@@ -74,5 +145,16 @@ async def delete_contact(
     db=Depends(get_db),
     current_user: User = Depends(auth_service.get_current_user),
 ):
+    """
+    Видалити контакт за його ідентифікатором.
+
+    Args:
+        id (int): Ідентифікатор контакту.
+        db (Session): Сесія бази даних.
+        current_user (User): Поточний авторизований користувач.
+
+    Returns:
+        ContactResponse: Видалений контакт.
+    """
     contact = await repository.delete_contact(id, db, current_user)
     return contact

@@ -20,8 +20,16 @@ redis-cli
 monitor
 ```
 
+### Docs
+
+```bash
+cd docs && make html && open _build/html/index.html
+```
+
 ### Tests
 
 ```bash
 pytest --cov=src tests/
 ```
+
+![Alt text](image.png)

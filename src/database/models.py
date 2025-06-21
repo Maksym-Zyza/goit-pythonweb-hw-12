@@ -16,11 +16,34 @@ Base = declarative_base()
 
 
 class Role(enum.Enum):
+    """
+    Enum ролей користувача.
+
+    Attributes:
+        admin (str): Роль адміністратора.
+        user (str): Роль звичайного користувача.
+    """
+
     admin: str = "admin"
     user: str = "user"
 
 
 class User(Base):
+    """
+    Модель користувача.
+
+    Attributes:
+        id (int): Унікальний ідентифікатор користувача.
+        username (str): Ім'я користувача.
+        email (str): Електронна пошта користувача (унікальна).
+        password (str): Хешований пароль.
+        refresh_token (str, optional): Токен оновлення для авторизації.
+        confirmed (bool): Чи підтверджено електронну пошту.
+        avatar (str, optional): URL аватара.
+        roles (Role): Роль користувача (admin або user).
+        contacts (List[Contact]): Список контактів, пов’язаних з користувачем.
+    """
+
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
@@ -36,6 +59,20 @@ class User(Base):
 
 
 class Contact(Base):
+    """
+    Модель контакту.
+
+    Attributes:
+        id (int): Унікальний ідентифікатор контакту.
+        first_name (str): Ім'я контакту.
+        last_name (str): Прізвище контакту.
+        email (str): Електронна пошта контакту.
+        phone (str): Номер телефону контакту.
+        birthday (datetime, optional): Дата народження контакту.
+        user_id (int): Ідентифікатор користувача, до якого належить контакт.
+        owner (User): Зв’язок з користувачем-власником контакту.
+    """
+
     __tablename__ = "contacts"
 
     id = Column(Integer, primary_key=True, autoincrement=True)

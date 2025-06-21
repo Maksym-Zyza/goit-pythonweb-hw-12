@@ -18,6 +18,15 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 def get_db():
+    """
+    Функція генератор для отримання сесії бази даних.
+
+    Використовується як залежність у FastAPI для отримання сесії
+    SQLAlchemy. Після завершення роботи сесія закривається.
+
+    Yields:
+        Session: Сесія бази даних SQLAlchemy.
+    """
     db = SessionLocal()
     try:
         yield db

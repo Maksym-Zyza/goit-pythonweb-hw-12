@@ -18,8 +18,27 @@ conf = ConnectionConfig(
     TEMPLATE_FOLDER=Path(__file__).parent / "templates",
 )
 
+"""
+Модуль сервісу відправки email повідомлень.
+
+Використовує FastAPI-Mail для відправки підтвердження email та скидання пароля.
+"""
+
 
 async def send_email(email: str, username: str, host: str):
+    """
+    Відправляє email для підтвердження реєстрації користувача.
+
+    Генерує JWT токен підтвердження email та відправляє лист з посиланням.
+
+    Args:
+        email (str): Email отримувача.
+        username (str): Ім'я користувача.
+        host (str): Базовий URL сервера (для формування посилання).
+
+    Raises:
+        ConnectionErrors: У разі проблем з відправкою листа.
+    """
     try:
         token_verification = auth_service.create_email_token({"sub": email})
         message = MessageSchema(
@@ -40,6 +59,17 @@ async def send_email(email: str, username: str, host: str):
 
 
 async def send_reset_password_email(email: str, username: str, reset_link: str):
+    """
+    Відправляє email з посиланням на форму скидання пароля.
+
+    Args:
+        email (str): Email отримувача.
+        username (str): Ім'я користувача.
+        reset_link (str): Посилання для скидання пароля.
+
+    Raises:
+        ConnectionErrors: У разі проблем з відправкою листа.
+    """
     try:
         message = MessageSchema(
             subject="Password Reset Request",

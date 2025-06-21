@@ -7,7 +7,26 @@ from datetime import datetime, timedelta
 from src.database.models import Contact, User
 
 
-async def search_contacts(first_name, last_name, email, db: Session, user: User):
+async def search_contacts(
+    first_name: str,
+    last_name: str,
+    email: str,
+    db: Session,
+    user: User,
+):
+    """
+    Пошук контактів користувача за ім'ям, прізвищем або email.
+
+    Args:
+        first_name (str): Частина або повне ім'я для пошуку.
+        last_name (str): Частина або повне прізвище для пошуку.
+        email (str): Частина або повна email адреса для пошуку.
+        db (Session): Сесія бази даних SQLAlchemy.
+        user (User): Об'єкт користувача, контакти якого шукаються.
+
+    Returns:
+        list[Contact]: Список знайдених контактів.
+    """
     query = db.query(Contact).filter(Contact.user_id == user.id)
 
     if first_name:
@@ -21,6 +40,20 @@ async def search_contacts(first_name, last_name, email, db: Session, user: User)
 
 
 async def create_contact(body, db: Session, user: User):
+    """
+    Створення нового контакту для користувача.
+
+    Args:
+        body: Pydantic модель з даними контакту.
+        db (Session): Сесія бази даних.
+        user (User): Користувач, якому належить контакт.
+
+    Raises:
+        HTTPException: Якщо email або телефон вже існують (IntegrityError).
+
+    Returns:
+        Contact: Створений об'єкт контакту.
+    """
     contact = Contact(**body.model_dump(), user_id=user.id)
     db.add(contact)
     try:
@@ -35,6 +68,20 @@ async def create_contact(body, db: Session, user: User):
 
 
 async def get_contact_by_id(id: int, db: Session, user: User):
+    """
+    Отримати контакт за ID, якщо він належить користувачу.
+
+    Args:
+        id (int): Ідентифікатор контакту.
+        db (Session): Сесія бази даних.
+        user (User): Користувач, якому належить контакт.
+
+    Raises:
+        HTTPException: Якщо контакт не знайдено.
+
+    Returns:
+        Contact: Об'єкт контакту.
+    """
     contact = (
         db.query(Contact).filter(Contact.id == id, Contact.user_id == user.id).first()
     )
@@ -46,6 +93,21 @@ async def get_contact_by_id(id: int, db: Session, user: User):
 
 
 async def update_contact(id: int, body, db: Session, user: User):
+    """
+    Оновити існуючий контакт за ID.
+
+    Args:
+        id (int): Ідентифікатор контакту.
+        body: Pydantic модель з оновленими даними.
+        db (Session): Сесія бази даних.
+        user (User): Користувач, якому належить контакт.
+
+    Raises:
+        HTTPException: Якщо контакт не знайдено або email/телефон вже існують.
+
+    Returns:
+        Contact: Оновлений контакт.
+    """
     contact = (
         db.query(Contact).filter(Contact.id == id, Contact.user_id == user.id).first()
     )
@@ -70,6 +132,20 @@ async def update_contact(id: int, body, db: Session, user: User):
 
 
 async def delete_contact(id: int, db: Session, user: User):
+    """
+    Видалити контакт за ID.
+
+    Args:
+        id (int): Ідентифікатор контакту.
+        db (Session): Сесія бази даних.
+        user (User): Користувач, якому належить контакт.
+
+    Raises:
+        HTTPException: Якщо контакт не знайдено.
+
+    Returns:
+        Contact: Видалений контакт.
+    """
     contact = (
         db.query(Contact).filter(Contact.id == id, Contact.user_id == user.id).first()
     )
@@ -84,6 +160,16 @@ async def delete_contact(id: int, db: Session, user: User):
 
 
 async def get_upcoming_birthdays(db: Session, user: User):
+    """
+    Отримати список контактів користувача, у яких день народження у найближчі 7 днів.
+
+    Args:
+        db (Session): Сесія бази даних.
+        user (User): Користувач, контакти якого перевіряються.
+
+    Returns:
+        list[Contact]: Список контактів з майбутніми днями народження.
+    """
     today = datetime.today().date()
     upcoming = today + timedelta(days=7)
 
