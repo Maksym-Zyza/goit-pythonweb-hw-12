@@ -19,3 +19,9 @@ redis-cli
 ```bash
 monitor
 ```
+
+### Tests
+
+```bash
+PYTHONPATH=. pytest --cov=src tests/
+```
