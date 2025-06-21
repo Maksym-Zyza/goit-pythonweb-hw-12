@@ -23,5 +23,5 @@ monitor
 ### Tests
 
 ```bash
-PYTHONPATH=. pytest --cov=src tests/
+pytest --cov=src tests/
 ```
