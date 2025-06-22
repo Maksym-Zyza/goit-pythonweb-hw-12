@@ -11,6 +11,8 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from src.repository.users import get_user_by_email
 from src.database.db import get_db
+from src.services.redis_config import get_redis_client
+
 
 load_dotenv()
 
@@ -30,7 +32,7 @@ class Auth:
 
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
-    r = redis.Redis(host="localhost", port=6379, db=0)
+    r = get_redis_client()
 
     def verify_password(self, plain_password, hashed_password):
         """
