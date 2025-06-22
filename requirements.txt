@@ -16,4 +16,5 @@ redis==6.2.0
 slowapi==0.1.9
 SQLAlchemy==2.0.41
 pytest-cov==6.2.1
+httpx==0.28.1
 sphinx==7.4.7
